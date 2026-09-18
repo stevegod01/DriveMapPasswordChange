@@ -1,0 +1,22 @@
+name: PowerShell regression checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  mocked-tests:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        shell: [pwsh, powershell]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse source and run mocked tests
+        shell: ${{ matrix.shell }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Get-ChildItem -Recurse -File -Include *.ps1,*.psm1 | ForEach-Object {
+            $tokens = $null; $errors = $null
+            $null = [Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors)
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
+          ./tests/Run-Tests.ps1
