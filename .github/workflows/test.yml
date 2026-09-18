@@ -8,10 +8,12 @@ jobs:
     strategy:
       matrix:
         shell: [pwsh, powershell]
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
     steps:
       - uses: actions/checkout@v4
       - name: Parse source and run mocked tests
-        shell: ${{ matrix.shell }}
         run: |
           $ErrorActionPreference = 'Stop'
           Get-ChildItem -Recurse -File -Include *.ps1,*.psm1 | ForEach-Object {
